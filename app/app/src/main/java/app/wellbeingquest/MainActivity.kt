@@ -1,5 +1,6 @@
 package app.wellbeingquest
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,7 +17,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import app.wellbeingquest.ui.theme.WellbeingQuestTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +35,13 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+
+        lifecycleScope.launch {
+            delay(5000L)
+
+            var intent = Intent(this@MainActivity, WeekActivity::class.java)
+            startActivity(intent)
         }
     }
 }

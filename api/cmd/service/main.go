@@ -1,6 +1,8 @@
 package main
 
 import (
+	"api.wellbeingquest.app/internal/handlers"
+
 	"fmt"
 	"net/http"
 	"time"
@@ -35,7 +37,7 @@ var activities = []Activity {
 
 func main() {
 	router := gin.Default()
-	router.POST("/activities/v1", postActivity)
+	router.POST("/activities/v1", handlers.PostActivity)
 	router.GET("/activities/v1/weeks/:week", getActivitiesByWeek)
 	router.GET("/activities/v1/suggestions", getActivitySuggestions)
 	router.Run("localhost:8080")

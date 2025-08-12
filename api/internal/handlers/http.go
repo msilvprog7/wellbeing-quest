@@ -63,3 +63,18 @@ func GetActivitiesByWeek(c *gin.Context) {
 	// return week
 	c.IndentedJSON(http.StatusOK, week)
 }
+
+func GetActivitySuggestions(c *gin.Context) {
+	// get activities and feelings
+	activities, feelings, dataErr := GetActivitiesAndFeelings()
+	if dataErr != nil {
+		c.IndentedJSON(http.StatusNotFound, dtos.ErrorMessage{
+			Message: fmt.Sprintf("Get activity suggestions returned no results. error: %s", dataErr.Error()),
+		})
+		return
+	}
+
+	// return suggestions
+	suggestions := FormatSuggestions(activities, feelings)
+	c.IndentedJSON(http.StatusOK, suggestions)
+}

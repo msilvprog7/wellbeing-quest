@@ -19,7 +19,8 @@ go mod tidy
 go run ./cmd/service
 ```
 
-Send requests via curl:
+Send requests via curl or postman collection
+in `examples/Wellbeing Quest.postman_collection.json`:
 
 ```cmd
 curl http://localhost:8080/activities/v1 \

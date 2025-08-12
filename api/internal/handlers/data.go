@@ -77,29 +77,27 @@ func GetWeekAndActivities(weekRequested *dtos.Week) (models.Week, []models.Entry
 	return week, entriesByWeek, nil
 }
 
-func createOrGetByName[T any](mapByName map[string]T, name string, createFunc func(string) T) T {
-	if existing, exists := mapByName[name]; exists {
-		return existing
+func GetActivitiesAndFeelings() ([]models.Activity, []models.Feeling, error) {
+	// get activities
+	activities := values(activitiesByName)
+	if len(activities) == 0 {
+		return []models.Activity{}, []models.Feeling{}, errors.New("activities are empty")
 	}
 
-	newItem := createFunc(name)
-	mapByName[name] = newItem
-	return newItem
+	// get feelings
+	feelings := values(feelingsByName)
+	if len(feelings) == 0 {
+		return []models.Activity{}, []models.Feeling{}, errors.New("feelings are empty")
+	}
+
+	// return activities and feelings
+	return activities, feelings, nil
 }
 
+// Helper functions related to representing data
 func getWeek(time *time.Time) string {
 	// Calculate the start of the week (Sunday)
 	weekday := int(time.Weekday())
 	startOfWeek := time.AddDate(0, 0, -weekday)
 	return startOfWeek.Format("2006-01-02")
-}
-
-func mapSlice[T any, R any](slice []T, mapFunc func(T) R) []R {
-	result := make([]R, len(slice))
-
-	for i, item := range slice {
-		result[i] = mapFunc(item)
-	}
-
-	return result
 }

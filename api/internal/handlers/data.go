@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"time"
 
 	"api.wellbeingquest.app/internal/dtos"
@@ -12,7 +13,7 @@ var activitiesByName = map[string]models.Activity{}
 var feelingsByName = map[string]models.Feeling{}
 var weeksByName = map[string]models.Week{}
 
-func AddActivity(activityRequested dtos.Activity) models.Entry {
+func AddActivity(activityRequested *dtos.Activity) models.Entry {
 	// Create or get activity, feelings, and week
 	activity := createOrGetByName(activitiesByName, activityRequested.Name, func(name string) models.Activity {
 		return models.Activity {
@@ -51,6 +52,29 @@ func AddActivity(activityRequested dtos.Activity) models.Entry {
 	}
 	entries = append(entries, entry)
 	return entry
+}
+
+func GetWeekAndActivities(weekRequested *dtos.Week) (models.Week, []models.Entry, error) {
+	// get week
+	if _, exists := weeksByName[weekRequested.Name]; !exists {
+		return models.Week{}, []models.Entry{}, errors.New("week does not exist")
+	}
+
+	week := weeksByName[weekRequested.Name]
+
+	// get entries
+	entriesByWeek := []models.Entry{}
+	for _, entry := range entries {
+		if entry.Week == week.Name {
+			entriesByWeek = append(entriesByWeek, entry)
+		}
+	}
+
+	if len(entriesByWeek) == 0 {
+		return week, entriesByWeek, errors.New("entries are empty")
+	}
+
+	return week, entriesByWeek, nil
 }
 
 func createOrGetByName[T any](mapByName map[string]T, name string, createFunc func(string) T) T {

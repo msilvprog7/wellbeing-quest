@@ -38,7 +38,7 @@ var activities = []Activity {
 func main() {
 	router := gin.Default()
 	router.POST("/activities/v1", handlers.PostActivity)
-	router.GET("/activities/v1/weeks/:week", getActivitiesByWeek)
+	router.GET("/activities/v1/weeks/:week", handlers.GetActivitiesByWeek)
 	router.GET("/activities/v1/suggestions", getActivitySuggestions)
 	router.Run("localhost:8080")
 }

@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WellbeingQuest">
         <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddActivity"
+            android:exported="false" />
+        <activity
             android:name=".WeekActivity"
             android:exported="false" />
         <activity

@@ -19,7 +19,8 @@ go mod tidy
 go run ./cmd/service
 ```
 
-Send requests via curl:
+Send requests via curl or postman collection
+in `examples/Wellbeing Quest.postman_collection.json`:
 
 ```cmd
 curl http://localhost:8080/activities/v1 \
@@ -28,7 +29,7 @@ curl http://localhost:8080/activities/v1 \
     --request "POST" \
     --data '{"name": "Meditate","feelings": ["Relaxed"]}'
 
-curl http://localhost:8080/activities/v1/weeks/2025-08-03
+curl http://localhost:8080/activities/v1/weeks/2025-08-10
 
 curl http://localhost:8080/activities/v1/suggestions
 ```

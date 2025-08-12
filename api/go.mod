@@ -2,6 +2,12 @@ module api.wellbeingquest.app
 
 go 1.24.5
 
+replace api.wellbeingquest.app/internal/dtos => ./internal/dtos
+
+replace api.wellbeingquest.app/internal/handlers => ./internal/handlers
+
+replace api.wellbeingquest.app/internal/models => ./internal/models
+
 require github.com/gin-gonic/gin v1.10.1
 
 require (

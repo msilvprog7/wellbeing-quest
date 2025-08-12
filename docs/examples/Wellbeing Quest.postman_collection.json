@@ -1,0 +1,83 @@
+{
+	"info": {
+		"_postman_id": "ffff6693-6d7f-46c0-8a0e-d01109413943",
+		"name": "Wellbeing Quest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46167593",
+		"_collection_link": "https://michael-4304060.postman.co/workspace/Michael's-Workspace~a5e45f9b-6660-4754-8b45-4eba718aadfd/collection/46167593-ffff6693-6d7f-46c0-8a0e-d01109413943?action=share&source=collection_link&creator=46167593"
+	},
+	"item": [
+		{
+			"name": "Post Activity",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Meditate\",\n    \"feelings\": [\"Relaxed\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/activities/v1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"activities",
+						"v1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Activities by Week",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/activities/v1/weeks/2025-08-10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"activities",
+						"v1",
+						"weeks",
+						"2025-08-10"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Activity Suggestions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/activities/v1/suggestions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"activities",
+						"v1",
+						"suggestions"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -1,10 +1,9 @@
 package app.wellbeingquest
 
+import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,31 +27,63 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import app.wellbeingquest.ui.theme.BottomBar
+import app.wellbeingquest.ui.theme.NavigationButton
+import app.wellbeingquest.ui.theme.TopBar
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class WeekActivity : ComponentActivity() {
+
+    var weekNameFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    var dayNameFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEE MMM d")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val weekViewModel: WeekViewModel = viewModel()
+            val selectedWeekStart = weekViewModel.selectedWeekStart.collectAsState()
+            val hasNextWeek = weekViewModel.hasNextWeek.collectAsState()
+
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 contentWindowInsets = WindowInsets.safeDrawing,
                 bottomBar = {
-                    BottomBar()
+                    BottomBar(
+                        alignment = Alignment.End,
+                        modifier = Modifier
+                    ) {
+                        NavigationButton(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Navigate to settings",
+                            onClick = {
+                                var intent = Intent(this@WeekActivity, SettingsActivity::class.java)
+                                startActivity(intent)
+                            }
+                        )
+                        NavigationButton(
+                            imageVector = Icons.Default.AddCircle,
+                            contentDescription = "Add an activity",
+                            onClick = {
+                                var intent = Intent(this@WeekActivity, AddActivity::class.java)
+                                startActivity(intent)
+                            },
+                            enabled = !hasNextWeek.value
+                        )
+                    }
                 }
             ) { innerPadding ->
                 Column(
@@ -61,35 +91,47 @@ class WeekActivity : ComponentActivity() {
                         .fillMaxSize()
                         .padding(innerPadding)
                 ) {
-                    TopBar()
+                    TopBar(
+                        arrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier) {
+
+                        NavigationButton(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            contentDescription = "View the previous week",
+                            onClick = {
+                                weekViewModel.previousWeek()
+                            }
+                        )
+                        GroupText(
+                            text = getWeekDisplay(selectedWeekStart.value),
+                            modifier = Modifier
+                                .wrapContentWidth(Alignment.CenterHorizontally)
+                                .align(Alignment.CenterVertically))
+                        NavigationButton(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = "View the next week",
+                            onClick = {
+                                weekViewModel.nextWeek()
+                            },
+                            enabled = hasNextWeek.value
+                        )
+
+                    }
+
                     ScrollableContent()
                 }
             }
         }
     }
 
-    @Composable
-    fun TopBar() {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            NavigationButton(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = "View the previous week"
-            )
-            GroupText(
-                text = "Sun Aug 10 - Sat Aug 16",
-                modifier = Modifier
-                    .wrapContentWidth(Alignment.CenterHorizontally)
-                    .align(Alignment.CenterVertically))
-            NavigationButton(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "View the next week"
-            )
-        }
+    fun getWeekName(selectedWeek: LocalDate): String {
+        return weekNameFormatter.format(selectedWeek)
+    }
+
+    fun getWeekDisplay(selectedWeek: LocalDate): String {
+        val start = dayNameFormatter.format(selectedWeek)
+        val end = dayNameFormatter.format(selectedWeek.plusDays(6))
+        return "$start - $end"
     }
 
     @Composable
@@ -137,30 +179,9 @@ class WeekActivity : ComponentActivity() {
     }
 
     @Composable
-    fun BottomBar() {
-        // Bottom Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            NavigationButton(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Navigate to settings"
-            )
-            NavigationButton(
-                imageVector = Icons.Default.AddCircle,
-                contentDescription = "Add an activity"
-            )
-        }
-    }
-
-    @Composable
     fun GroupText(text: String, modifier: Modifier) {
         Text(
-            text = "Sun Aug 10 - Sat Aug 16",
+            text = text,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             modifier = modifier
@@ -181,32 +202,6 @@ class WeekActivity : ComponentActivity() {
                 )
                 .padding(horizontal = 12.dp, vertical = 6.dp)
         )
-    }
-
-    @Composable
-    fun NavigationButton(imageVector: ImageVector, contentDescription: String) {
-        var context = LocalContext.current
-
-        Button(
-            onClick = {
-                Toast.makeText(context, contentDescription, Toast.LENGTH_SHORT)
-                    .show()
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFE5DADA), // Timberwolf Gray
-                contentColor = Color(0xFF02040F) // Rich Black
-            ),
-            modifier = Modifier
-                .width(64.dp),
-            contentPadding = PaddingValues(0.dp)
-        ) {
-            Icon(
-                imageVector = imageVector,
-                contentDescription = contentDescription,
-                modifier = Modifier,
-                tint = Color(0xFF02040F) // Rich Black
-            )
-        }
     }
 
     @Composable

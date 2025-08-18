@@ -34,7 +34,7 @@ class SettingsActivity : ComponentActivity() {
                             onClick = {
                                 var intent = Intent(this@SettingsActivity, WeekActivity::class.java)
                                 startActivity(intent)
-                            }
+                            },
                         )
                     }
                 }

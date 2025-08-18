@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -41,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wellbeingquest.ui.theme.BottomBar
+import app.wellbeingquest.ui.theme.GroupLabel
+import app.wellbeingquest.ui.theme.GroupText
 import app.wellbeingquest.ui.theme.NavigationButton
 import app.wellbeingquest.ui.theme.TopBar
 import java.time.LocalDate
@@ -72,7 +73,7 @@ class WeekActivity : ComponentActivity() {
                             onClick = {
                                 var intent = Intent(this@WeekActivity, SettingsActivity::class.java)
                                 startActivity(intent)
-                            }
+                            },
                         )
                         NavigationButton(
                             imageVector = Icons.Default.AddCircle,
@@ -81,7 +82,7 @@ class WeekActivity : ComponentActivity() {
                                 var intent = Intent(this@WeekActivity, AddActivity::class.java)
                                 startActivity(intent)
                             },
-                            enabled = !hasNextWeek.value
+                            enabled = !hasNextWeek.value,
                         )
                     }
                 }
@@ -100,7 +101,7 @@ class WeekActivity : ComponentActivity() {
                             contentDescription = "View the previous week",
                             onClick = {
                                 weekViewModel.previousWeek()
-                            }
+                            },
                         )
                         GroupText(
                             text = getWeekDisplay(selectedWeekStart.value),
@@ -113,7 +114,7 @@ class WeekActivity : ComponentActivity() {
                             onClick = {
                                 weekViewModel.nextWeek()
                             },
-                            enabled = hasNextWeek.value
+                            enabled = hasNextWeek.value,
                         )
 
                     }
@@ -148,7 +149,8 @@ class WeekActivity : ComponentActivity() {
                 text = "My feelings and activities",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentWidth(Alignment.CenterHorizontally))
+                    .wrapContentWidth(Alignment.CenterHorizontally)
+            )
             Spacer(modifier = Modifier.height(4.dp))
 
             FeelingLabel("Relaxed feeling")
@@ -173,35 +175,12 @@ class WeekActivity : ComponentActivity() {
             ActivityItem("Learned a new fact about space", incomplete = true)
             ActivityItem("Watched a new thriller movie", incomplete = true)
             ActivityItem("Signed up for a ceramics class", incomplete = true)
-            ActivityItem("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", incomplete = true)
+            ActivityItem(
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+                incomplete = true
+            )
             Spacer(modifier = Modifier.height(16.dp))
         }
-    }
-
-    @Composable
-    fun GroupText(text: String, modifier: Modifier) {
-        Text(
-            text = text,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = modifier
-        )
-    }
-
-    @Composable
-    fun GroupLabel(text: String, modifier: Modifier) {
-        Text(
-            text = text,
-            color = Color.White,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = modifier
-                .background(
-                    color = Color(0xFF002642), // Prussian Blue
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-        )
     }
 
     @Composable

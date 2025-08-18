@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"slices"
+
 	"api.wellbeingquest.app/internal/dtos"
 	"api.wellbeingquest.app/internal/models"
 )
@@ -95,4 +97,21 @@ func values[K comparable, V any](m map[K]V) []V {
         values = append(values, v)
     }
     return values
+}
+
+func filter[T any](slice []T, condition func(T) bool) []T {
+	result := []T{}
+	for _, item := range slice {
+		if condition(item) {
+			result = append(result, item)
+		}
+	}
+	return result
+}
+
+func sort[T any](slice []T, compare func(T, T) int) []T {
+	result := make([]T, len(slice))
+	copy(result, slice)
+	slices.SortFunc(result, compare)
+	return result
 }

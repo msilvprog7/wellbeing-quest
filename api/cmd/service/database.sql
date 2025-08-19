@@ -1,0 +1,41 @@
+CREATE TABLE IF NOT EXISTS Activities (
+  Id SERIAL PRIMARY KEY,
+  Name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Feelings (
+  Id SERIAL PRIMARY KEY,
+  Name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Weeks (
+  Id SERIAL PRIMARY KEY,
+  Name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Entries (
+  Id SERIAL PRIMARY KEY,
+  ActivityId INTEGER REFERENCES Activities(Id) ON DELETE SET NULL,
+  WeekId INTEGER REFERENCES Weeks(Id) ON DELETE SET NULL,
+  Created TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS EntryFeelings (
+  EntryId INTEGER REFERENCES Entries(Id) ON DELETE CASCADE,
+  FeelingId INTEGER REFERENCES Feelings(Id) ON DELETE CASCADE,
+  PRIMARY KEY (EntryId, FeelingId)
+);
+
+CREATE TABLE IF NOT EXISTS ActivityFeelings (
+  ActivityId INTEGER REFERENCES Activities(Id) ON DELETE CASCADE,
+  FeelingId INTEGER REFERENCES Feelings(Id) ON DELETE CASCADE,
+  PRIMARY KEY (ActivityId, FeelingId)
+);
+
+CREATE INDEX IF NOT EXISTS idx_entries_week_created ON Entries(WeekId, Created ASC);
+
+CREATE INDEX IF NOT EXISTS idx_entries_activity ON Entries(ActivityId);
+
+CREATE INDEX IF NOT EXISTS idx_activityfeelings_activity ON ActivityFeelings(ActivityId);
+
+CREATE INDEX IF NOT EXISTS idx_activityfeelings_feeling ON ActivityFeelings(FeelingId);

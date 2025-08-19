@@ -8,7 +8,10 @@ replace api.wellbeingquest.app/internal/handlers => ./internal/handlers
 
 replace api.wellbeingquest.app/internal/models => ./internal/models
 
-require github.com/gin-gonic/gin v1.10.1
+require (
+	github.com/gin-gonic/gin v1.10.1
+	github.com/lib/pq v1.10.9
+)
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
@@ -21,6 +24,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect

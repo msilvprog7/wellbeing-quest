@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.wellbeingquest.ui.theme.AutoCompleteTextField
 import app.wellbeingquest.ui.theme.BottomBar
 import app.wellbeingquest.ui.theme.FormButton
 import app.wellbeingquest.ui.theme.GroupText
@@ -79,9 +80,23 @@ class AddActivity : ComponentActivity() {
     @Composable
     fun ScrollableContent() {
         val scrollState = rememberScrollState()
-        var name by remember { mutableStateOf("") }
-        var feeling by remember { mutableStateOf("") }
+        var activity = remember { mutableStateOf("") }
+        var feeling = remember { mutableStateOf("") }
         var feelings by remember { mutableStateOf(listOf<String>()) }
+        var activitySuggestions = remember(activity) {
+            var suggestions = listOf("Exercise", "Read", "Meditate", "Listen to music")
+            suggestions.filter { suggestion ->
+                suggestion.contains(activity.value, ignoreCase = true) && suggestion.lowercase() != activity.value
+            }.take(5)
+        }
+        var activitySuggestionsExpanded by remember { mutableStateOf(false) }
+        var feelingSuggestions = remember(feeling) {
+            var suggestions = listOf("Relaxed", "Focused", "Energetic", "Sad")
+            suggestions.filter { suggestion ->
+                suggestion.contains(feeling.value, ignoreCase = true) && suggestion.lowercase() != feeling.value
+            }.take(5)
+        }
+        var feelingSuggestionsExpanded by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier
@@ -90,11 +105,15 @@ class AddActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top)
         ) {
             // activity name
-            TextField(
-                value = name,
-                onValueChange = { name = it },
+            AutoCompleteTextField(
+                text = activity.value,
+                onTextChange = { activity.value = it },
                 label = { Text("enter name of activity") },
-                placeholder = { Text("Exercise") },
+                placeholder = { Text("Activity") },
+                suggestions = activitySuggestions,
+                onSuggestionsChange = { activitySuggestions = it },
+                expanded = activitySuggestionsExpanded,
+                onExpandedChange = { activitySuggestionsExpanded = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -103,21 +122,17 @@ class AddActivity : ComponentActivity() {
 
             // feelings
             MultiEntryTextField(
-                value = feeling,
-                onValueChange = { feeling = it },
+                text = feeling.value,
+                onTextChange = { feeling.value = it },
                 label = { Text("enter feelings") },
                 placeholder = { Text("Relaxed") },
-                onDone = {
-                    if (feeling.isNotBlank() && !feelings.contains(feeling.trim())) {
-                        feelings = feelings + feeling.trim()
-                        feeling = ""
-                    }
-                },
-                onRemove = { entry ->
-                    feelings = feelings - entry
-                },
-                entries = feelings,
-                enabled = feeling.isNotBlank() && !feelings.contains(feeling.trim()),
+                suggestions = feelingSuggestions,
+                onSuggestionsChange = { feelingSuggestions = it },
+                expanded = feelingSuggestionsExpanded,
+                onExpandedChange = { feelingSuggestionsExpanded = it },
+                selected = feelings,
+                onSelectedChange = { feelings = it },
+                modifier = Modifier
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -130,7 +145,7 @@ class AddActivity : ComponentActivity() {
                   startActivity(intent)
                 },
                 // require name and 1 feeling
-                enabled = feelings.isNotEmpty(),
+                enabled = activity.value.isNotBlank() && feelings.isNotEmpty(),
             )
         }
     }

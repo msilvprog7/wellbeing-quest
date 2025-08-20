@@ -24,7 +24,7 @@ func NewInMemoryDataHandler() *InMemoryDataHandler {
 	}
 }
 
-func (handler *InMemoryDataHandler) AddActivity(activityRequested *dtos.Activity) models.Entry {
+func (handler *InMemoryDataHandler) AddActivity(activityRequested *dtos.Activity) (models.Entry, error) {
 	// Create or get activity, feelings, and week
 	activity := createOrGetByName(handler.activitiesByName, activityRequested.Name, func(name string) models.Activity {
 		return models.Activity {
@@ -83,7 +83,7 @@ func (handler *InMemoryDataHandler) AddActivity(activityRequested *dtos.Activity
 		Created: activityRequested.Created,
 	}
 	handler.entries = append(handler.entries, entry)
-	return entry
+	return entry, nil
 }
 
 func (handler *InMemoryDataHandler) GetWeekAndActivities(weekRequested *dtos.Week) (models.Week, []models.Entry, error) {

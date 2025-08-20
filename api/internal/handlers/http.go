@@ -25,7 +25,14 @@ func PostActivity(dataHandler DataHandler) gin.HandlerFunc {
 
 		// add entry
 		activity.Created = time.Now()
-		entry := dataHandler.AddActivity(&activity)
+		entry, dataErr := dataHandler.AddActivity(&activity)
+
+		if dataErr != nil {
+			c.IndentedJSON(http.StatusInternalServerError, dtos.ErrorMessage {
+				Message: fmt.Sprintf("Post activity request failed. error: %s", dataErr.Error()),
+			})
+			return
+		}
 
 		// set week
 		activity.Week = entry.Week

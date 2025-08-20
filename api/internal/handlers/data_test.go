@@ -18,7 +18,7 @@ func TestAddActivityWhenNoEntries(t *testing.T) {
 	}
 
 	// Act
-	entry := dataHandler.AddActivity(&activity)
+	entry, _ := dataHandler.AddActivity(&activity)
 
 	// Assert
 	assertEntry(t, &entry, &activity, 1)
@@ -75,7 +75,7 @@ func TestAddActivityWhenExistingActivity(t *testing.T) {
 	}
 
 	// Act
-	entry := dataHandler.AddActivity(&activity)
+	entry, _ := dataHandler.AddActivity(&activity)
 
 	// Assert
 	assertEntry(t, &entry, &activity, 2)
@@ -131,7 +131,7 @@ func TestAddActivityWhenExistingFeeling(t *testing.T) {
 	}
 
 	// Act
-	entry := dataHandler.AddActivity(&activity)
+	entry, _ := dataHandler.AddActivity(&activity)
 
 	// Assert
 	assertEntry(t, &entry, &activity, 2)
@@ -187,7 +187,7 @@ func TestAddActivityWhenExistingWeek(t *testing.T) {
 	}
 
 	// Act
-	entry := dataHandler.AddActivity(&activity)
+	entry, _ := dataHandler.AddActivity(&activity)
 
 	// Assert
 	assertEntry(t, &entry, &activity, 2)

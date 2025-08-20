@@ -12,18 +12,9 @@ import (
 )
 
 func main() {
-	// .env setup
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Failed to load .env file", err)
-	}
-
-	// Data handler setup
-	dataHandler := handlers.NewInMemoryDataHandler()
-
-	_, err := handlers.NewLocalHostDataHandler(getConnectionString(), "cmd/service/database.sql", getDatabaseDriver())
-	if err != nil {
-		log.Fatal("Failed to initialize localhost database handler:", err)
-	}
+	// Resource setup
+	loadDotEnv()
+	dataHandler := getDataHandler()
 
 
 	// Gin setup
@@ -35,6 +26,42 @@ func main() {
 	router.Run("localhost:8080")
 }
 
+func loadDotEnv() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Failed to load .env file", err)
+	}
+
+	log.Println("Loaded .env")
+}
+
+func getDataHandler() handlers.DataHandler {
+	switch getDatabaseMode() {
+	case "localhost":
+		localhostDataHandler, err := handlers.NewLocalHostDataHandler(getDatabaseDriver(), getConnectionString(), getSetup())
+		if err != nil {
+			log.Fatal("Failed to initialize localhost database handler:", err)
+		}
+
+		log.Println("Setup localhost data handler")
+		return localhostDataHandler
+	default:
+		log.Println("Setup inmemory data handler")
+		return handlers.NewInMemoryDataHandler()
+	}
+}
+
+func getDatabaseMode() string {
+	return os.Getenv("DB_MODE")
+}
+
+func getDatabaseReset() string {
+	return os.Getenv("DB_RESET")
+}
+
+func getDatabaseDriver() string {
+	return os.Getenv("DB_DRIVER")
+}
+
 func getConnectionString() string {
 	return fmt.Sprintf(
 		"host=localhost port=5432 user=%s password=%s dbname=%s sslmode=disable",
@@ -43,6 +70,14 @@ func getConnectionString() string {
 		os.Getenv("DB_NAME"))
 }
 
-func getDatabaseDriver() string {
-	return os.Getenv("DB_DRIVER")
+func getSetup() []string {
+	setup := []string{}
+
+	if getDatabaseReset() == "reset" {
+		setup = append(setup, "cmd/service/database_reset.sql")
+	}
+
+	setup = append(setup, "cmd/service/database.sql")
+
+	return setup
 }

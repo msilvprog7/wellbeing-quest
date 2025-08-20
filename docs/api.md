@@ -7,7 +7,33 @@ Placeholder for documentation for the API services.
 The API services use the following:
 
 - Go
+- Go dot env
 - Gin web service framework
+- Docker
+- Postgres (localhost)
+
+Run postgres from a docker container, specifying
+a password:
+
+```cmd
+docker run --name pg-local \
+  -e POSTGRES_PASSWORD= \
+  -e POSTGRES_DB=yourdb \
+  -p 5432:5432 \
+  -d postgres
+```
+
+Create file `.env`, specifying the password
+entered above:
+
+```text
+DB_MODE=localhost
+DB_RESET=reset
+DB_DRIVER=postgres
+DB_USER=postgres
+DB_PASSWORD=
+DB_NAME=yourdb
+```
 
 ## Run
 

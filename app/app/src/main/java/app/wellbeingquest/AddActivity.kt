@@ -20,7 +20,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +28,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import app.wellbeingquest.data.local.database.AppDatabase
+import app.wellbeingquest.data.local.database.DatabaseProvider
+import app.wellbeingquest.data.local.entity.EntryDraft
 import app.wellbeingquest.ui.theme.AutoCompleteTextField
 import app.wellbeingquest.ui.theme.BottomBar
 import app.wellbeingquest.ui.theme.FormButton
@@ -36,53 +39,59 @@ import app.wellbeingquest.ui.theme.GroupText
 import app.wellbeingquest.ui.theme.MultiEntryTextField
 import app.wellbeingquest.ui.theme.NavigationButton
 import app.wellbeingquest.ui.theme.TopBar
+import kotlinx.coroutines.launch
 
 class AddActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                contentWindowInsets = WindowInsets.safeDrawing,
-                bottomBar = {
-                    BottomBar(
-                        alignment = Alignment.Start,
-                        modifier = Modifier) {
-                        NavigationButton(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back to Week",
-                            onClick = {
-                                var intent = Intent(this@AddActivity, WeekActivity::class.java)
-                                startActivity(intent)
-                            },
-                        )
-                    }
-                }
-            ) { innerPadding ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                ) {
-                    TopBar(
-                        arrangement = Arrangement.Center,
-                        modifier = Modifier
-                    ) {
-                        GroupText("add an activity", modifier = Modifier)
-                    }
+        lifecycleScope.launch {
+            val appDatabase = DatabaseProvider.getInstance(this@AddActivity)
+            val draft = appDatabase.entryDraftDao().getDraft()
 
-                    ScrollableContent()
+            setContent {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    contentWindowInsets = WindowInsets.safeDrawing,
+                    bottomBar = {
+                        BottomBar(
+                            alignment = Alignment.Start,
+                            modifier = Modifier) {
+                            NavigationButton(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Navigate back to Week",
+                                onClick = {
+                                    var intent = Intent(this@AddActivity, WeekActivity::class.java)
+                                    startActivity(intent)
+                                },
+                            )
+                        }
+                    }
+                ) { innerPadding ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        TopBar(
+                            arrangement = Arrangement.Center,
+                            modifier = Modifier
+                        ) {
+                            GroupText("add an activity", modifier = Modifier)
+                        }
+
+                        ScrollableContent(appDatabase, draft)
+                    }
                 }
             }
         }
     }
 
     @Composable
-    fun ScrollableContent() {
+    fun ScrollableContent(appDatabase: AppDatabase, draft: EntryDraft?) {
         val scrollState = rememberScrollState()
-        var activity = remember { mutableStateOf("") }
+        var activity = remember { mutableStateOf(draft?.activity ?: "") }
         var feeling = remember { mutableStateOf("") }
-        var feelings by remember { mutableStateOf(listOf<String>()) }
+        var feelings by remember { mutableStateOf(draft?.feelings ?: listOf<String>()) }
         var activitySuggestions = remember(activity) {
             var suggestions = listOf("Exercise", "Read", "Meditate", "Listen to music")
             suggestions.filter { suggestion ->
@@ -107,7 +116,16 @@ class AddActivity : ComponentActivity() {
             // activity name
             AutoCompleteTextField(
                 text = activity.value,
-                onTextChange = { activity.value = it },
+                onTextChange = {
+                    activity.value = it
+                    // todo:
+                    /*
+                    appDatabase.entryDraftDao().insert(EntryDraft(
+                        id = 0,
+                        activity = it,
+                        feelings = feelings))
+                     */
+                },
                 label = { Text("enter name of activity") },
                 placeholder = { Text("Activity") },
                 suggestions = activitySuggestions,

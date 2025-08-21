@@ -33,8 +33,11 @@ func NewLocalHostDataHandler(driver string, connection string, setup []string) (
 
 	for _, setup := range dataHandler.setup {
 		if err := runSqlCommands(&dataHandler, setup); err != nil {
+				log.Printf("error running sql commands %s, error: %v", setup, err)
 				return nil, err
 		}
+		
+		log.Printf("completed running sql commands %s", setup)
 	}
 
 	return &dataHandler, nil
@@ -97,7 +100,7 @@ func (handler *LocalHostDataHandler) AddActivity(activityRequested *dtos.Activit
 		log.Printf("Feeling, id %d, name '%s'\n", feeling.Id, feeling.Name)
 	}
 
-	weekRequested := getWeek(&activityRequested.Created)
+	weekRequested := GetWeek(&activityRequested.Created)
 	week, err := handler.createOrGetWeek(weekRequested)
 	if err != nil {
 		return entry, err
@@ -147,7 +150,7 @@ func (handler *LocalHostDataHandler) GetWeekAndActivities(weekRequested *dtos.We
 		return week, entries, err
 	}
 
-	start, err := getTime(week.Name)
+	start, err := GetTime(week.Name)
 	if err != nil {
 		return week, entries, fmt.Errorf("error parsing time by week name '%s', error: %v", week.Name, err)
 	}

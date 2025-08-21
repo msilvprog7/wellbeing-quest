@@ -14,13 +14,13 @@ type DataHandler interface {
 }
 
 // Helper functions related to representing data
-func getWeek(time *time.Time) string {
+func GetWeek(time *time.Time) string {
 	// Calculate the start of the week (Sunday)
 	weekday := int(time.Weekday())
 	startOfWeek := time.AddDate(0, 0, -weekday)
 	return startOfWeek.Format("2006-01-02")
 }
 
-func getTime(week string) (time.Time, error) {
+func GetTime(week string) (time.Time, error) {
 	return time.Parse("2006-01-02", week)
 }

@@ -36,7 +36,7 @@ func FormatActivitiesByFeelings(entries []models.Entry) []dtos.Feeling {
 		}
 	}
 
-	return values(feelingsByName)
+	return Values(feelingsByName)
 }
 
 func FormatSuggestions(activities []models.Activity, feelings []models.Feeling) dtos.Suggestions {
@@ -91,7 +91,7 @@ func mapSlice[T any, R any](slice []T, mapFunc func(T) R) []R {
 	return result
 }
 
-func values[K comparable, V any](m map[K]V) []V {
+func Values[K comparable, V any](m map[K]V) []V {
     values := make([]V, 0, len(m))
     for _, v := range m {
         values = append(values, v)
@@ -99,7 +99,7 @@ func values[K comparable, V any](m map[K]V) []V {
     return values
 }
 
-func filter[T any](slice []T, condition func(T) bool) []T {
+func Filter[T any](slice []T, condition func(T) bool) []T {
 	result := []T{}
 	for _, item := range slice {
 		if condition(item) {
@@ -109,7 +109,7 @@ func filter[T any](slice []T, condition func(T) bool) []T {
 	return result
 }
 
-func sort[T any](slice []T, compare func(T, T) int) []T {
+func Sort[T any](slice []T, compare func(T, T) int) []T {
 	result := make([]T, len(slice))
 	copy(result, slice)
 	slices.SortFunc(result, compare)

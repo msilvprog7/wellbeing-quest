@@ -1,16 +1,17 @@
-package handlers
+package unittests
 
 import (
 	"testing"
 	"time"
 
 	"api.wellbeingquest.app/internal/dtos"
+	"api.wellbeingquest.app/internal/handlers"
 	"api.wellbeingquest.app/internal/models"
 )
 
 func TestAddActivityWhenNoEntries(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
+	dataHandler := handlers.NewInMemoryDataHandler()
 	activity := dtos.Activity {
 		Name: "Read",
 		Feelings: []string{"Relaxed", "Accomplished"},
@@ -25,13 +26,13 @@ func TestAddActivityWhenNoEntries(t *testing.T) {
 	assertActivity(t, dataHandler, activity.Name, 1, activity.Feelings)
 	assertFeeling(t, dataHandler, activity.Feelings[0], 1, []string{activity.Name})
 	assertFeeling(t, dataHandler, activity.Feelings[1], 2, []string{activity.Name})
-	assertWeek(t, dataHandler, getWeek(&activity.Created), 1)
+	assertWeek(t, dataHandler, handlers.GetWeek(&activity.Created), 1)
 }
 
 func TestAddActivityWhenExistingActivity(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
-	dataHandler.entries = []models.Entry{
+	dataHandler := handlers.NewInMemoryDataHandler()
+	dataHandler.Entries = []models.Entry{
 		models.Entry{
 			Id: 1,
 			Activity: "Read",
@@ -40,14 +41,14 @@ func TestAddActivityWhenExistingActivity(t *testing.T) {
 			Created: time.Date(2025, 8, 18, 0, 0, 0, 0, time.UTC),
 		},
 	}
-	dataHandler.activitiesByName = map[string]models.Activity{
+	dataHandler.ActivitiesByName = map[string]models.Activity{
 		"Read": models.Activity{
 			Id: 1,
 			Name: "Read",
 			Feelings: []string{"Relaxed", "Accomplished"},
 		},
 	}
-  dataHandler.feelingsByName = map[string]models.Feeling{
+  dataHandler.FeelingsByName = map[string]models.Feeling{
 		"Relaxed": models.Feeling{
 			Id: 1,
 			Name: "Relaxed",
@@ -59,7 +60,7 @@ func TestAddActivityWhenExistingActivity(t *testing.T) {
 			Activities: []string{"Read"},
 		},
 	}
-  dataHandler.weeksByName = map[string]models.Week{
+  dataHandler.WeeksByName = map[string]models.Week{
 		"2025-08-17": models.Week{
 			Id: 1,
 			Name: "2025-08-17",
@@ -81,13 +82,13 @@ func TestAddActivityWhenExistingActivity(t *testing.T) {
 	assertEntry(t, &entry, &activity, 2)
 	assertActivity(t, dataHandler, activity.Name, 1, []string{"Relaxed", "Accomplished", "Focused"})
 	assertFeeling(t, dataHandler, "Focused", 3, []string{activity.Name})
-	assertWeek(t, dataHandler, getWeek(&activity.Created), 2)
+	assertWeek(t, dataHandler, handlers.GetWeek(&activity.Created), 2)
 }
 
 func TestAddActivityWhenExistingFeeling(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
-	dataHandler.entries = []models.Entry{
+	dataHandler := handlers.NewInMemoryDataHandler()
+	dataHandler.Entries = []models.Entry{
 		models.Entry{
 			Id: 1,
 			Activity: "Read",
@@ -96,14 +97,14 @@ func TestAddActivityWhenExistingFeeling(t *testing.T) {
 			Created: time.Date(2025, 8, 18, 0, 0, 0, 0, time.UTC),
 		},
 	}
-	dataHandler.activitiesByName = map[string]models.Activity{
+	dataHandler.ActivitiesByName = map[string]models.Activity{
 		"Read": models.Activity{
 			Id: 1,
 			Name: "Read",
 			Feelings: []string{"Relaxed", "Accomplished"},
 		},
 	}
-  dataHandler.feelingsByName = map[string]models.Feeling{
+  dataHandler.FeelingsByName = map[string]models.Feeling{
 		"Relaxed": models.Feeling{
 			Id: 1,
 			Name: "Relaxed",
@@ -115,7 +116,7 @@ func TestAddActivityWhenExistingFeeling(t *testing.T) {
 			Activities: []string{"Read"},
 		},
 	}
-  dataHandler.weeksByName = map[string]models.Week{
+  dataHandler.WeeksByName = map[string]models.Week{
 		"2025-08-17": models.Week{
 			Id: 1,
 			Name: "2025-08-17",
@@ -137,13 +138,13 @@ func TestAddActivityWhenExistingFeeling(t *testing.T) {
 	assertEntry(t, &entry, &activity, 2)
 	assertActivity(t, dataHandler, activity.Name, 2, []string{"Relaxed"})
 	assertFeeling(t, dataHandler, "Relaxed", 1, []string{"Read", "Write"})
-	assertWeek(t, dataHandler, getWeek(&activity.Created), 2)
+	assertWeek(t, dataHandler, handlers.GetWeek(&activity.Created), 2)
 }
 
 func TestAddActivityWhenExistingWeek(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
-	dataHandler.entries = []models.Entry{
+	dataHandler := handlers.NewInMemoryDataHandler()
+	dataHandler.Entries = []models.Entry{
 		models.Entry{
 			Id: 1,
 			Activity: "Read",
@@ -152,14 +153,14 @@ func TestAddActivityWhenExistingWeek(t *testing.T) {
 			Created: time.Date(2025, 8, 18, 0, 0, 0, 0, time.UTC),
 		},
 	}
-	dataHandler.activitiesByName = map[string]models.Activity{
+	dataHandler.ActivitiesByName = map[string]models.Activity{
 		"Read": models.Activity{
 			Id: 1,
 			Name: "Read",
 			Feelings: []string{"Relaxed", "Accomplished"},
 		},
 	}
-  dataHandler.feelingsByName = map[string]models.Feeling{
+  dataHandler.FeelingsByName = map[string]models.Feeling{
 		"Relaxed": models.Feeling{
 			Id: 1,
 			Name: "Relaxed",
@@ -171,7 +172,7 @@ func TestAddActivityWhenExistingWeek(t *testing.T) {
 			Activities: []string{"Read"},
 		},
 	}
-  dataHandler.weeksByName = map[string]models.Week{
+  dataHandler.WeeksByName = map[string]models.Week{
 		"2025-08-17": models.Week{
 			Id: 1,
 			Name: "2025-08-17",
@@ -193,13 +194,13 @@ func TestAddActivityWhenExistingWeek(t *testing.T) {
 	assertEntry(t, &entry, &activity, 2)
 	assertActivity(t, dataHandler, activity.Name, 2, []string{"Focused"})
 	assertFeeling(t, dataHandler, "Focused", 3, []string{"Write"})
-	assertWeek(t, dataHandler, getWeek(&activity.Created), 1)
+	assertWeek(t, dataHandler, handlers.GetWeek(&activity.Created), 1)
 }
 
 func TestGetWeekAndActivitiesWhenNoWeek(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
-	dataHandler.weeksByName = map[string]models.Week{}
+	dataHandler := handlers.NewInMemoryDataHandler()
+	dataHandler.WeeksByName = map[string]models.Week{}
 
 	weekRequested := dtos.Week{
 		Name: "2025-08-17",
@@ -216,9 +217,9 @@ func TestGetWeekAndActivitiesWhenNoWeek(t *testing.T) {
 
 func TestGetWeekAndActivitiesWhenNoEntries(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
-	dataHandler.entries = []models.Entry{}
-  dataHandler.weeksByName = map[string]models.Week{
+	dataHandler := handlers.NewInMemoryDataHandler()
+	dataHandler.Entries = []models.Entry{}
+  dataHandler.WeeksByName = map[string]models.Week{
 		"2025-08-17": models.Week{
 			Id: 1,
 			Name: "2025-08-17",
@@ -242,8 +243,8 @@ func TestGetWeekAndActivitiesWhenNoEntries(t *testing.T) {
 
 func TestGetWeekAndActivitiesWhenEntries(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
-	dataHandler.entries = []models.Entry{
+	dataHandler := handlers.NewInMemoryDataHandler()
+	dataHandler.Entries = []models.Entry{
 		models.Entry{
 			Id: 1,
 			Activity: "Read",
@@ -266,7 +267,7 @@ func TestGetWeekAndActivitiesWhenEntries(t *testing.T) {
 			Created: time.Date(2025, 8, 24, 0, 0, 0, 0, time.UTC),
 		},
 	}
-  dataHandler.weeksByName = map[string]models.Week{
+  dataHandler.WeeksByName = map[string]models.Week{
 		"2025-08-17": models.Week{
 			Id: 1,
 			Name: "2025-08-17",
@@ -279,7 +280,7 @@ func TestGetWeekAndActivitiesWhenEntries(t *testing.T) {
 		Name: "2025-08-17",
 	}
 
-	expectedEntries := filter(dataHandler.entries, func(e models.Entry) bool {
+	expectedEntries := handlers.Filter(dataHandler.Entries, func(e models.Entry) bool {
 		return e.Week == weekRequested.Name
 	})
 
@@ -297,9 +298,9 @@ func TestGetWeekAndActivitiesWhenEntries(t *testing.T) {
 
 func TestGetActivitiesAndFeelingsWhenNoActivities(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
-	dataHandler.activitiesByName = map[string]models.Activity{}
-  dataHandler.feelingsByName = map[string]models.Feeling{
+	dataHandler := handlers.NewInMemoryDataHandler()
+	dataHandler.ActivitiesByName = map[string]models.Activity{}
+  dataHandler.FeelingsByName = map[string]models.Feeling{
 		"Relaxed": models.Feeling{
 			Id: 1,
 			Name: "Relaxed",
@@ -328,8 +329,8 @@ func TestGetActivitiesAndFeelingsWhenNoActivities(t *testing.T) {
 
 func TestGetActivitiesAndFeelingsWhenNoFeelings(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
-	dataHandler.activitiesByName = map[string]models.Activity{
+	dataHandler := handlers.NewInMemoryDataHandler()
+	dataHandler.ActivitiesByName = map[string]models.Activity{
 		"Read": models.Activity{
 			Id: 1,
 			Name: "Read",
@@ -341,7 +342,7 @@ func TestGetActivitiesAndFeelingsWhenNoFeelings(t *testing.T) {
 			Feelings: []string{"Creative"},
 		},
 	}
-  dataHandler.feelingsByName = map[string]models.Feeling{}
+  dataHandler.FeelingsByName = map[string]models.Feeling{}
 
 	// Act
 	_, _, err := dataHandler.GetActivitiesAndFeelings()
@@ -354,8 +355,8 @@ func TestGetActivitiesAndFeelingsWhenNoFeelings(t *testing.T) {
 
 func TestGetActivitiesAndFeelingsWheActivitiesAndFeelings(t *testing.T) {
 	// Arrange
-	dataHandler := NewInMemoryDataHandler()
-	dataHandler.activitiesByName = map[string]models.Activity{
+	dataHandler := handlers.NewInMemoryDataHandler()
+	dataHandler.ActivitiesByName = map[string]models.Activity{
 		"Read": models.Activity{
 			Id: 1,
 			Name: "Read",
@@ -367,7 +368,7 @@ func TestGetActivitiesAndFeelingsWheActivitiesAndFeelings(t *testing.T) {
 			Feelings: []string{"Creative"},
 		},
 	}
-  dataHandler.feelingsByName = map[string]models.Feeling{
+  dataHandler.FeelingsByName = map[string]models.Feeling{
 		"Relaxed": models.Feeling{
 			Id: 1,
 			Name: "Relaxed",
@@ -393,10 +394,10 @@ func TestGetActivitiesAndFeelingsWheActivitiesAndFeelings(t *testing.T) {
 		t.Errorf("Error message is '%s' but expected nil", err.Error())
 	}
 
-	assertActivities(t, activities, sort(values(dataHandler.activitiesByName), func(a models.Activity, b models.Activity) int {
+	assertActivities(t, activities, handlers.Sort(handlers.Values(dataHandler.ActivitiesByName), func(a models.Activity, b models.Activity) int {
 		return a.Id - b.Id
 	}))
-	assertFeelings(t, feelings, sort(values(dataHandler.feelingsByName), func(a models.Feeling, b models.Feeling) int {
+	assertFeelings(t, feelings, handlers.Sort(handlers.Values(dataHandler.FeelingsByName), func(a models.Feeling, b models.Feeling) int {
 		return a.Id - b.Id
 	}))
 }
@@ -423,8 +424,8 @@ func assertEntry(t *testing.T, entry *models.Entry, activity *dtos.Activity, id 
 		}
 	}
 
-	if entry.Week != getWeek(&activity.Created) {
-		t.Errorf("Entry has week '%s' but should have '%s'", entry.Week, getWeek(&activity.Created))
+	if entry.Week != handlers.GetWeek(&activity.Created) {
+		t.Errorf("Entry has week '%s' but should have '%s'", entry.Week, handlers.GetWeek(&activity.Created))
 	}
 
 	if entry.Created != activity.Created {
@@ -466,8 +467,8 @@ func assertEntries(t *testing.T, actual []models.Entry, expected []models.Entry)
 	}
 }
 
-func assertActivity(t *testing.T, dataHandler *InMemoryDataHandler, name string, id int, feelings []string) {
-	activity, exists := dataHandler.activitiesByName[name]
+func assertActivity(t *testing.T, dataHandler *handlers.InMemoryDataHandler, name string, id int, feelings []string) {
+	activity, exists := dataHandler.ActivitiesByName[name]
 
 	if !exists {
 		t.Errorf("Activities by name should contain key for '%s'", name)
@@ -518,8 +519,8 @@ func assertActivities(t *testing.T, actual []models.Activity, expected []models.
 	}
 }
 
-func assertFeeling(t *testing.T, dataHandler *InMemoryDataHandler, name string, id int, activities []string) {
-	feeling, exists := dataHandler.feelingsByName[name]
+func assertFeeling(t *testing.T, dataHandler *handlers.InMemoryDataHandler, name string, id int, activities []string) {
+	feeling, exists := dataHandler.FeelingsByName[name]
 
 	if !exists {
 		t.Errorf("Feelings by name should contain key for '%s'", name)
@@ -570,8 +571,8 @@ func assertFeelings(t *testing.T, actual []models.Feeling, expected []models.Fee
 	}
 }
 
-func assertWeek(t *testing.T, dataHandler *InMemoryDataHandler, name string, id int) {
-	week, exists := dataHandler.weeksByName[name]
+func assertWeek(t *testing.T, dataHandler *handlers.InMemoryDataHandler, name string, id int) {
+	week, exists := dataHandler.WeeksByName[name]
 
 	if !exists {
 		t.Errorf("Weeks by name should contain key for '%s'", name)
@@ -589,11 +590,11 @@ func assertWeekFields(t *testing.T, week *models.Week, name string, id int) {
 		t.Errorf("Week has name '%s' but should have '%s'", week.Name, name)
 	}
 
-	if start, _ := getTime(name); week.Start != start {
+	if start, _ := handlers.GetTime(name); week.Start != start {
 		t.Errorf("Week has start '%s' but should have '%s'", week.Start, start)
 	}
 
-	if start, _ := getTime(name); week.End != start.AddDate(0, 0, 6) {
+	if start, _ := handlers.GetTime(name); week.End != start.AddDate(0, 0, 6) {
 		t.Errorf("Week has end '%s' but should have '%s'", week.End, start.AddDate(0, 0, 6))
 	}
 }

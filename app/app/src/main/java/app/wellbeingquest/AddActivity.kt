@@ -21,9 +21,11 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +34,8 @@ import androidx.lifecycle.lifecycleScope
 import app.wellbeingquest.data.local.database.AppDatabase
 import app.wellbeingquest.data.local.database.DatabaseProvider
 import app.wellbeingquest.data.local.entity.EntryDraft
+import app.wellbeingquest.data.local.entity.EntryQueueItem
+import app.wellbeingquest.data.local.entity.SuggestionCacheItem
 import app.wellbeingquest.ui.theme.AutoCompleteTextField
 import app.wellbeingquest.ui.theme.BottomBar
 import app.wellbeingquest.ui.theme.FormButton
@@ -39,6 +43,8 @@ import app.wellbeingquest.ui.theme.GroupText
 import app.wellbeingquest.ui.theme.MultiEntryTextField
 import app.wellbeingquest.ui.theme.NavigationButton
 import app.wellbeingquest.ui.theme.TopBar
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class AddActivity : ComponentActivity() {
@@ -47,6 +53,7 @@ class AddActivity : ComponentActivity() {
         lifecycleScope.launch {
             val appDatabase = DatabaseProvider.getInstance(this@AddActivity)
             val draft = appDatabase.entryDraftDao().getDraft()
+            val suggestionCacheItems = appDatabase.suggestionCacheItemDao().getItems()
 
             setContent {
                 Scaffold(
@@ -79,7 +86,7 @@ class AddActivity : ComponentActivity() {
                             GroupText("add an activity", modifier = Modifier)
                         }
 
-                        ScrollableContent(appDatabase, draft)
+                        ScrollableContent(appDatabase, draft, suggestionCacheItems)
                     }
                 }
             }
@@ -87,25 +94,63 @@ class AddActivity : ComponentActivity() {
     }
 
     @Composable
-    fun ScrollableContent(appDatabase: AppDatabase, draft: EntryDraft?) {
+    fun ScrollableContent(appDatabase: AppDatabase, draft: EntryDraft?, suggestionCacheItems: List<SuggestionCacheItem>) {
         val scrollState = rememberScrollState()
         var activity = remember { mutableStateOf(draft?.activity ?: "") }
         var feeling = remember { mutableStateOf("") }
         var feelings by remember { mutableStateOf(draft?.feelings ?: listOf<String>()) }
         var activitySuggestions = remember(activity) {
-            var suggestions = listOf("Exercise", "Read", "Meditate", "Listen to music")
+            var suggestions = suggestionCacheItems
+                .filter { suggestion -> suggestion.type == "activity" }
+                .map { suggestion -> suggestion.text }
+                .toList()
             suggestions.filter { suggestion ->
                 suggestion.contains(activity.value, ignoreCase = true) && suggestion.lowercase() != activity.value
             }.take(5)
         }
         var activitySuggestionsExpanded by remember { mutableStateOf(false) }
         var feelingSuggestions = remember(feeling) {
-            var suggestions = listOf("Relaxed", "Focused", "Energetic", "Sad")
+            var suggestions = suggestionCacheItems
+                .filter { suggestion -> suggestion.type == "feeling" }
+                .map { suggestion -> suggestion.text }
+                .toList()
             suggestions.filter { suggestion ->
                 suggestion.contains(feeling.value, ignoreCase = true) && suggestion.lowercase() != feeling.value
             }.take(5)
         }
         var feelingSuggestionsExpanded by remember { mutableStateOf(false) }
+
+        val scope = rememberCoroutineScope()
+        val entryDraftDao = appDatabase.entryDraftDao()
+        val entryQueueItemDao = appDatabase.entryQueueItemDao()
+        var activityUpdateJob by remember { mutableStateOf<Job?>(null) }
+        val debouncePeriodMillis = 500L
+        val updateEntryDraft = { activity: String, feelings: List<String> ->
+            activityUpdateJob?.cancel()
+            activityUpdateJob = scope.launch {
+                delay(debouncePeriodMillis)
+
+                entryDraftDao.insert(
+                    EntryDraft(
+                        id = 0, // only support 1 draft now
+                        activity = activity,
+                        feelings = feelings,
+                    )
+                )
+            }
+        }
+        val submitEntry = { activity: String, feelings: List<String> ->
+            activityUpdateJob?.cancel()
+            activityUpdateJob = scope.launch {
+                entryQueueItemDao.insert(EntryQueueItem(
+                    id = 0,
+                    activity = activity,
+                    feelings = feelings,
+                    created = System.currentTimeMillis()
+                ))
+                entryDraftDao.delete()
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -118,13 +163,7 @@ class AddActivity : ComponentActivity() {
                 text = activity.value,
                 onTextChange = {
                     activity.value = it
-                    // todo:
-                    /*
-                    appDatabase.entryDraftDao().insert(EntryDraft(
-                        id = 0,
-                        activity = it,
-                        feelings = feelings))
-                     */
+                    updateEntryDraft(it, feelings)
                 },
                 label = { Text("enter name of activity") },
                 placeholder = { Text("Activity") },
@@ -149,7 +188,10 @@ class AddActivity : ComponentActivity() {
                 expanded = feelingSuggestionsExpanded,
                 onExpandedChange = { feelingSuggestionsExpanded = it },
                 selected = feelings,
-                onSelectedChange = { feelings = it },
+                onSelectedChange = {
+                    feelings = it
+                    updateEntryDraft(activity.value, it)
+                },
                 modifier = Modifier
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -159,12 +201,20 @@ class AddActivity : ComponentActivity() {
                 imageVector = Icons.Default.AddCircle,
                 contentDescription = "add activity",
                 onClick = {
-                  var intent = Intent(this@AddActivity, WeekActivity::class.java)
-                  startActivity(intent)
+                    submitEntry(activity.value, feelings)
+
+                    var intent = Intent(this@AddActivity, WeekActivity::class.java)
+                    startActivity(intent)
                 },
                 // require name and 1 feeling
                 enabled = activity.value.isNotBlank() && feelings.isNotEmpty(),
             )
+        }
+
+        DisposableEffect(Unit) {
+            onDispose {
+                updateEntryDraft(activity.value, feelings)
+            }
         }
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -38,88 +39,101 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import app.wellbeingquest.data.local.database.DatabaseProvider
+import app.wellbeingquest.data.model.Activity
+import app.wellbeingquest.data.model.Feeling
 import app.wellbeingquest.ui.theme.BottomBar
 import app.wellbeingquest.ui.theme.GroupLabel
 import app.wellbeingquest.ui.theme.GroupText
 import app.wellbeingquest.ui.theme.NavigationButton
 import app.wellbeingquest.ui.theme.TopBar
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class WeekActivity : ComponentActivity() {
-
     var weekNameFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     var dayNameFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEE MMM d")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            val weekViewModel: WeekViewModel = viewModel()
-            val selectedWeekStart = weekViewModel.selectedWeekStart.collectAsState()
-            val hasNextWeek = weekViewModel.hasNextWeek.collectAsState()
+        lifecycleScope.launch {
+            val appDatabase = DatabaseProvider.getInstance(this@WeekActivity)
+            val viewModelFactory = WeekViewModelFactory(appDatabase)
+            val weekViewModel: WeekViewModel = ViewModelProvider(this@WeekActivity, viewModelFactory)[WeekViewModel::class.java]
 
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                contentWindowInsets = WindowInsets.safeDrawing,
-                bottomBar = {
-                    BottomBar(
-                        alignment = Alignment.End,
-                        modifier = Modifier
-                    ) {
-                        NavigationButton(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Navigate to settings",
-                            onClick = {
-                                var intent = Intent(this@WeekActivity, SettingsActivity::class.java)
-                                startActivity(intent)
-                            },
-                        )
-                        NavigationButton(
-                            imageVector = Icons.Default.AddCircle,
-                            contentDescription = "Add an activity",
-                            onClick = {
-                                var intent = Intent(this@WeekActivity, AddActivity::class.java)
-                                startActivity(intent)
-                            },
-                            enabled = !hasNextWeek.value,
-                        )
-                    }
-                }
-            ) { innerPadding ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                ) {
-                    TopBar(
-                        arrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier) {
+            setContent {
+                val selectedWeekStart = weekViewModel.selectedWeekStart.collectAsState()
+                val hasNextWeek = weekViewModel.hasNextWeek.collectAsState()
+                val feelingsInWeek = weekViewModel.feelingsInWeek.collectAsState()
 
-                        NavigationButton(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            contentDescription = "View the previous week",
-                            onClick = {
-                                weekViewModel.previousWeek()
-                            },
-                        )
-                        GroupText(
-                            text = getWeekDisplay(selectedWeekStart.value),
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    contentWindowInsets = WindowInsets.safeDrawing,
+                    bottomBar = {
+                        BottomBar(
+                            alignment = Alignment.End,
                             modifier = Modifier
-                                .wrapContentWidth(Alignment.CenterHorizontally)
-                                .align(Alignment.CenterVertically))
-                        NavigationButton(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = "View the next week",
-                            onClick = {
-                                weekViewModel.nextWeek()
-                            },
-                            enabled = hasNextWeek.value,
-                        )
-
+                        ) {
+                            NavigationButton(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Navigate to settings",
+                                onClick = {
+                                    var intent =
+                                        Intent(this@WeekActivity, SettingsActivity::class.java)
+                                    startActivity(intent)
+                                },
+                            )
+                            NavigationButton(
+                                imageVector = Icons.Default.AddCircle,
+                                contentDescription = "Add an activity",
+                                onClick = {
+                                    var intent = Intent(this@WeekActivity, AddActivity::class.java)
+                                    startActivity(intent)
+                                },
+                                enabled = !hasNextWeek.value,
+                            )
+                        }
                     }
+                ) { innerPadding ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        TopBar(
+                            arrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                        ) {
 
-                    ScrollableContent()
+                            NavigationButton(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                contentDescription = "View the previous week",
+                                onClick = {
+                                    weekViewModel.previousWeek()
+                                },
+                            )
+                            GroupText(
+                                text = getWeekDisplay(selectedWeekStart.value),
+                                modifier = Modifier
+                                    .wrapContentWidth(Alignment.CenterHorizontally)
+                                    .align(Alignment.CenterVertically)
+                            )
+                            NavigationButton(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "View the next week",
+                                onClick = {
+                                    weekViewModel.nextWeek()
+                                },
+                                enabled = hasNextWeek.value,
+                            )
+
+                        }
+
+                        ScrollableContent(feelingsInWeek.value)
+                    }
                 }
             }
         }
@@ -136,7 +150,7 @@ class WeekActivity : ComponentActivity() {
     }
 
     @Composable
-    fun ScrollableContent() {
+    fun ScrollableContent(feelingsInWeek: List<Feeling>) {
         val scrollState = rememberScrollState()
 
         Column(
@@ -153,33 +167,13 @@ class WeekActivity : ComponentActivity() {
             )
             Spacer(modifier = Modifier.height(4.dp))
 
-            FeelingLabel("Relaxed feeling")
-            ActivityItem("Meditated")
-            ActivityItem("Read")
-            ActivityItem("Coffee", incomplete = true)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            FeelingLabel("Accomplished feeling")
-            ActivityItem("Chores")
-            ActivityItem("Gardened")
-            ActivityItem("Played with cat", incomplete = true)
-            ActivityItem("Met up with friends", incomplete = true)
-            ActivityItem("Exercised at gym", incomplete = true)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            FeelingLabel("Excited feeling")
-            ActivityItem("Worked on a new project")
-            ActivityItem("Read an interesting article")
-            ActivityItem("Found a new snack for my cat")
-            ActivityItem("Heard a new song on the radio", incomplete = true)
-            ActivityItem("Learned a new fact about space", incomplete = true)
-            ActivityItem("Watched a new thriller movie", incomplete = true)
-            ActivityItem("Signed up for a ceramics class", incomplete = true)
-            ActivityItem(
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-                incomplete = true
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            for (feeling in feelingsInWeek) {
+                FeelingLabel(feeling.name)
+                for (activity in feeling.activities) {
+                    ActivityItem(activity)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     }
 
@@ -200,10 +194,10 @@ class WeekActivity : ComponentActivity() {
     }
 
     @Composable
-    fun ActivityItem(activity: String, incomplete: Boolean = false) {
-        val textColor = if (incomplete) Color(0xFF6E6E6E) else Color(0xFF02040F)
-        val backgroundColor = if (incomplete) Color(0xFFDADADA) else Color(0xFFE5DADA)
-        val fontStyle = if (incomplete) FontStyle.Italic else FontStyle.Normal
+    fun ActivityItem(activity: Activity) {
+        val textColor = if (activity.completed) Color(0xFF02040F) else Color(0xFF6E6E6E)
+        val backgroundColor = if (activity.completed) Color(0xFFE5DADA) else Color(0xFFDADADA)
+        val fontStyle = if (activity.completed) FontStyle.Normal else FontStyle.Italic
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -216,17 +210,26 @@ class WeekActivity : ComponentActivity() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = activity,
+                text = activity.name,
                 color = textColor,
                 fontStyle = fontStyle,
                 fontWeight = FontWeight.Normal,
                 modifier = Modifier.weight(1f)
             )
 
-            if (incomplete) {
+            if (!activity.completed) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Add activity",
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(16.dp),
+                    tint = textColor
+                )
+            } else if (!activity.synced) {
+                Icon(
+                    imageVector = Icons.Filled.CloudUpload,
+                    contentDescription = "Sync activity",
                     modifier = Modifier
                         .padding(start = 8.dp)
                         .size(16.dp),

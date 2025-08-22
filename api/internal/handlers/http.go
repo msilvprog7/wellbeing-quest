@@ -1,12 +1,11 @@
 package handlers
 
 import (
+	"fmt"
+	"net/http"
 	"time"
 
 	"api.wellbeingquest.app/internal/dtos"
-
-	"fmt"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )

@@ -36,6 +36,7 @@ import app.wellbeingquest.data.local.database.DatabaseProvider
 import app.wellbeingquest.data.local.entity.EntryDraft
 import app.wellbeingquest.data.local.entity.EntryQueueItem
 import app.wellbeingquest.data.local.entity.SuggestionCacheItem
+import app.wellbeingquest.data.service.api.scheduleUploadWorker
 import app.wellbeingquest.ui.theme.AutoCompleteTextField
 import app.wellbeingquest.ui.theme.BottomBar
 import app.wellbeingquest.ui.theme.FormButton

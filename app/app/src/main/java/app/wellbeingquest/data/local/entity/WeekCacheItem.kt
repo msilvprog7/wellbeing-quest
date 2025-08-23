@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
     tableName = "weekCacheItems",
     indices = [androidx.room.Index(value = ["name"])])
 data class WeekCacheItem (
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
 
     @ColumnInfo(name = "name")
     val name: String,

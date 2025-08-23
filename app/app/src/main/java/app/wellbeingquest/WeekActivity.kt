@@ -44,6 +44,7 @@ import androidx.lifecycle.lifecycleScope
 import app.wellbeingquest.data.local.database.DatabaseProvider
 import app.wellbeingquest.data.model.Activity
 import app.wellbeingquest.data.model.Feeling
+import app.wellbeingquest.data.service.api.scheduleUploadWorker
 import app.wellbeingquest.ui.theme.BottomBar
 import app.wellbeingquest.ui.theme.GroupLabel
 import app.wellbeingquest.ui.theme.GroupText
@@ -60,6 +61,9 @@ class WeekActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
+            // schedule upload of entries to api service
+            scheduleUploadWorker(this@WeekActivity)
+
             val appDatabase = DatabaseProvider.getInstance(this@WeekActivity)
             val viewModelFactory = WeekViewModelFactory(appDatabase)
             val weekViewModel: WeekViewModel = ViewModelProvider(this@WeekActivity, viewModelFactory)[WeekViewModel::class.java]

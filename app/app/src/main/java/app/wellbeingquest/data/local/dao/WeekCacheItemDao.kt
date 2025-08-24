@@ -13,4 +13,7 @@ interface WeekCacheItemDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: WeekCacheItem)
+
+    @Query("DELETE FROM weekCacheItems WHERE name = :name")
+    suspend fun deleteByWeek(name: String)
 }

@@ -36,6 +36,9 @@ import app.wellbeingquest.data.local.database.DatabaseProvider
 import app.wellbeingquest.data.local.entity.EntryDraft
 import app.wellbeingquest.data.local.entity.EntryQueueItem
 import app.wellbeingquest.data.local.entity.SuggestionCacheItem
+import app.wellbeingquest.data.model.Suggestions
+import app.wellbeingquest.data.service.api.DataRepository
+import app.wellbeingquest.data.service.api.RetrofitInstance
 import app.wellbeingquest.data.service.api.scheduleUploadWorker
 import app.wellbeingquest.ui.theme.AutoCompleteTextField
 import app.wellbeingquest.ui.theme.BottomBar
@@ -52,9 +55,13 @@ class AddActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
+            // todo: setup hilt to inject dependencies throughout app
             val appDatabase = DatabaseProvider.getInstance(this@AddActivity)
+            val apiService = RetrofitInstance.api
+            val dataRepository = DataRepository(appDatabase, apiService)
+
             val draft = appDatabase.entryDraftDao().getDraft()
-            val suggestionCacheItems = appDatabase.suggestionCacheItemDao().getItems()
+            val suggestions = dataRepository.getSuggestions()
 
             setContent {
                 Scaffold(
@@ -87,7 +94,7 @@ class AddActivity : ComponentActivity() {
                             GroupText("add an activity", modifier = Modifier)
                         }
 
-                        ScrollableContent(appDatabase, draft, suggestionCacheItems)
+                        ScrollableContent(appDatabase, draft, suggestions)
                     }
                 }
             }
@@ -95,27 +102,21 @@ class AddActivity : ComponentActivity() {
     }
 
     @Composable
-    fun ScrollableContent(appDatabase: AppDatabase, draft: EntryDraft?, suggestionCacheItems: List<SuggestionCacheItem>) {
+    fun ScrollableContent(appDatabase: AppDatabase, draft: EntryDraft?, suggestions: Suggestions) {
         val scrollState = rememberScrollState()
         var activity = remember { mutableStateOf(draft?.activity ?: "") }
         var feeling = remember { mutableStateOf("") }
         var feelings by remember { mutableStateOf(draft?.feelings ?: listOf<String>()) }
         var activitySuggestions = remember(activity) {
-            var suggestions = suggestionCacheItems
-                .filter { suggestion -> suggestion.type == "activity" }
-                .map { suggestion -> suggestion.text }
-                .toList()
-            suggestions.filter { suggestion ->
+            var activitySuggestions = suggestions.activities
+            activitySuggestions.filter { suggestion ->
                 suggestion.contains(activity.value, ignoreCase = true) && suggestion.lowercase() != activity.value
             }.take(5)
         }
         var activitySuggestionsExpanded by remember { mutableStateOf(false) }
         var feelingSuggestions = remember(feeling) {
-            var suggestions = suggestionCacheItems
-                .filter { suggestion -> suggestion.type == "feeling" }
-                .map { suggestion -> suggestion.text }
-                .toList()
-            suggestions.filter { suggestion ->
+            var feelingSuggestions = suggestions.feelings
+            feelingSuggestions.filter { suggestion ->
                 suggestion.contains(feeling.value, ignoreCase = true) && suggestion.lowercase() != feeling.value
             }.take(5)
         }

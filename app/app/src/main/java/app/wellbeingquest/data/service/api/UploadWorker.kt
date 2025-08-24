@@ -7,6 +7,7 @@ import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -14,7 +15,7 @@ import app.wellbeingquest.data.local.database.DatabaseProvider
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
-fun scheduleUploadWorker(context: Context) {
+fun scheduleUploadWorker(context: Context): OneTimeWorkRequest {
     Log.d("UploadWorker", "Scheduling upload worker")
 
     val constraints = Constraints.Builder()
@@ -35,6 +36,8 @@ fun scheduleUploadWorker(context: Context) {
         ExistingWorkPolicy.REPLACE,
         uploadWorkRequest
     )
+
+    return uploadWorkRequest
 }
 
 class UploadWorker(

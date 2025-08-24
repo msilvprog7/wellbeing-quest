@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "suggestionCacheItems")
 data class SuggestionCacheItem (
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
 
     @ColumnInfo(name = "type")
     val type: String,

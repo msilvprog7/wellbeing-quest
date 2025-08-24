@@ -13,4 +13,7 @@ interface SuggestionCacheItemDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: SuggestionCacheItem)
+
+    @Query("DELETE FROM suggestionCacheItems")
+    suspend fun deleteAll()
 }

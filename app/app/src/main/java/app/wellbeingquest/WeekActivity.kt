@@ -44,6 +44,8 @@ import androidx.lifecycle.lifecycleScope
 import app.wellbeingquest.data.local.database.DatabaseProvider
 import app.wellbeingquest.data.model.Activity
 import app.wellbeingquest.data.model.Feeling
+import app.wellbeingquest.data.service.api.DataRepository
+import app.wellbeingquest.data.service.api.RetrofitInstance
 import app.wellbeingquest.data.service.api.scheduleUploadWorker
 import app.wellbeingquest.ui.theme.BottomBar
 import app.wellbeingquest.ui.theme.GroupLabel
@@ -55,17 +57,17 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class WeekActivity : ComponentActivity() {
-    var weekNameFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     var dayNameFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEE MMM d")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
-            // schedule upload of entries to api service
-            scheduleUploadWorker(this@WeekActivity)
-
+            // week view model schedules upload of entries to api service to sync when uploaded
+            // todo: setup hilt to inject dependencies throughout app
             val appDatabase = DatabaseProvider.getInstance(this@WeekActivity)
-            val viewModelFactory = WeekViewModelFactory(appDatabase)
+            val apiService = RetrofitInstance.api
+            val dataRepository = DataRepository(appDatabase, apiService)
+            val viewModelFactory = WeekViewModelFactory(this@WeekActivity, dataRepository)
             val weekViewModel: WeekViewModel = ViewModelProvider(this@WeekActivity, viewModelFactory)[WeekViewModel::class.java]
 
             setContent {
@@ -85,7 +87,7 @@ class WeekActivity : ComponentActivity() {
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Navigate to settings",
                                 onClick = {
-                                    var intent =
+                                    val intent =
                                         Intent(this@WeekActivity, SettingsActivity::class.java)
                                     startActivity(intent)
                                 },
@@ -94,7 +96,7 @@ class WeekActivity : ComponentActivity() {
                                 imageVector = Icons.Default.AddCircle,
                                 contentDescription = "Add an activity",
                                 onClick = {
-                                    var intent = Intent(this@WeekActivity, AddActivity::class.java)
+                                    val intent = Intent(this@WeekActivity, AddActivity::class.java)
                                     startActivity(intent)
                                 },
                                 enabled = !hasNextWeek.value,
@@ -141,10 +143,6 @@ class WeekActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    fun getWeekName(selectedWeek: LocalDate): String {
-        return weekNameFormatter.format(selectedWeek)
     }
 
     fun getWeekDisplay(selectedWeek: LocalDate): String {

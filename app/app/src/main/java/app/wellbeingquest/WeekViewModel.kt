@@ -1,35 +1,40 @@
 package app.wellbeingquest
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.wellbeingquest.data.local.database.AppDatabase
-import app.wellbeingquest.data.model.Activity
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import app.wellbeingquest.data.model.Feeling
+import app.wellbeingquest.data.service.api.DataRepository
+import app.wellbeingquest.data.service.api.scheduleUploadWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class WeekViewModel(
-    private val appDatabase: AppDatabase
+    private val context: Context,
+    private val dataRepository: DataRepository
 ): ViewModel() {
-    private val _currentWeekStart = getStartOfWeek()
-    private val _currentWeek = getWeek(_currentWeekStart)
-    private val _selectedWeekStart = MutableStateFlow(_currentWeekStart)
+    private val _currentWeekActualStart = getStartOfWeek()
+    private val _selectedWeekStart = MutableStateFlow(_currentWeekActualStart)
     private val _feelingsInWeek = MutableStateFlow(listOf<Feeling>())
     val selectedWeekStart: StateFlow<LocalDate> = _selectedWeekStart
     val hasNextWeek: StateFlow<Boolean> = _selectedWeekStart
-        .map { date -> date.plusWeeks(1).isBefore(LocalDate.now()) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+        .map { selectedDate ->
+            selectedDate.isBefore(_currentWeekActualStart)
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, _selectedWeekStart.value.isBefore(_currentWeekActualStart))
     val feelingsInWeek: StateFlow<List<Feeling>> = _feelingsInWeek
 
     init {
+        triggerUploadWorker()
         loadWeek(_selectedWeekStart.value)
     }
 
@@ -47,7 +52,25 @@ class WeekViewModel(
         loadWeek(_selectedWeekStart.value)
     }
 
-    fun getStartOfWeek(): LocalDate {
+    fun triggerUploadWorker() {
+        val request = scheduleUploadWorker(context)
+        viewModelScope.launch {
+            WorkManager.getInstance(context)
+                .getWorkInfoByIdFlow(request.id)
+                .collect { workInfo ->
+                    Log.d("WeekViewModel", "UploadWorker State: ${workInfo?.state}")
+
+                    if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
+                        Log.d("WeekViewModel", "UploadWorker SUCCEEDED. Refreshing week data.")
+                        loadWeek(_selectedWeekStart.value)
+                    } else {
+                        Log.e("WeekViewModel", "UploadWorker FAILED.")
+                    }
+                }
+        }
+    }
+
+    private fun getStartOfWeek(): LocalDate {
         return getStartOfWeekFromLocalDate(LocalDate.now())
     }
 
@@ -60,37 +83,11 @@ class WeekViewModel(
         return DateTimeFormatter.ISO_LOCAL_DATE.format(start)
     }
 
-    private fun getLocalDate(ms: Long): LocalDate {
-        return Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).toLocalDate()
-    }
-
     private fun loadWeek(start: LocalDate) {
         val week = getWeek(start)
 
         viewModelScope.launch {
-            val feelings = HashMap<String, Feeling>()
-
-            // Add from cache
-            val weekCacheItems = appDatabase.weekCacheItemDao().getItemsByWeek(week)
-            for (item in weekCacheItems) {
-                val feeling = feelings.getOrPut(item.feeling, { Feeling(item.feeling, mutableListOf()) })
-                feeling.activities.add(Activity(item.activity, true, true))
-            }
-
-            // Add from upload queue
-            val entryQueueItems = appDatabase.entryQueueItemDao().getQueueItems()
-            for (item in entryQueueItems) {
-                val itemWeek = getWeek(getStartOfWeekFromLocalDate(getLocalDate(item.created)))
-                if (week != itemWeek) {
-                    continue;
-                }
-
-                for (feeling in item.feelings) {
-                    val feeling = feelings.getOrPut(feeling, { Feeling(feeling, mutableListOf()) })
-                    feeling.activities.add(Activity(item.activity, false, true))
-                }
-            }
-
+            val feelings = dataRepository.getWeek(week)
             _feelingsInWeek.value = feelings.values.toList()
         }
     }

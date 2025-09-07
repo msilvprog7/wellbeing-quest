@@ -12,17 +12,6 @@ The API services use the following:
 - Docker
 - Postgres (localhost)
 
-Run postgres from a docker container, specifying
-a password:
-
-```cmd
-docker run --name pg-local \
-  -e POSTGRES_PASSWORD= \
-  -e POSTGRES_DB=yourdb \
-  -p 5432:5432 \
-  -d postgres
-```
-
 Create file `.env`, specifying the password
 entered above:
 
@@ -32,6 +21,7 @@ DB_RESET=
 DB_DRIVER=postgres
 DB_USER=postgres
 DB_PASSWORD=
+DB_HOST=db
 DB_NAME=yourdb
 DB_SQLDIRECTORY=cmd/service
 ```
@@ -41,9 +31,7 @@ DB_SQLDIRECTORY=cmd/service
 Run the service on `http://localhost:8080`:
 
 ```cmd
-cd api
-go mod tidy
-go run ./cmd/service
+docker-compose up --build
 ```
 
 Send requests via curl or postman collection
@@ -77,6 +65,7 @@ DB_RESET=reset
 DB_DRIVER=postgres
 DB_USER=postgres
 DB_PASSWORD=
+DB_HOST=db
 DB_NAME=yourdb
 DB_SQLDIRECTORY=../../cmd/service
 ```

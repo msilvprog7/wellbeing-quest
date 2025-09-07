@@ -24,7 +24,8 @@ func GetDataHandler() handlers.DataHandler {
 		case "localhost":
 			// connection string
 			connectionString := fmt.Sprintf(
-				"host=localhost port=5432 user=%s password=%s dbname=%s sslmode=disable",
+				"host=%s port=5432 user=%s password=%s dbname=%s sslmode=disable",
+				os.Getenv("DB_HOST"),
 				os.Getenv("DB_USER"),
 				os.Getenv("DB_PASSWORD"),
 				os.Getenv("DB_NAME"))

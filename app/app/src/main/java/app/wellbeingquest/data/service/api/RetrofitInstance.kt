@@ -1,5 +1,6 @@
 package app.wellbeingquest.data.service.api
 
+import app.wellbeingquest.WellbeingQuestApplication
 import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -7,8 +8,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.Retrofit
 
 object RetrofitInstance {
-    private const val BASE_URL = "http://10.0.2.2:8080/" // api url from android emulator to device localhost
-
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
@@ -21,8 +20,9 @@ object RetrofitInstance {
         .build()
 
     private val retrofit by lazy {
+        val safeContext = WellbeingQuestApplication.instance.applicationContext
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(ApiConfig.getBaseUrl(safeContext))
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

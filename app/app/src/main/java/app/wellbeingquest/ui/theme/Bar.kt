@@ -1,10 +1,12 @@
 package app.wellbeingquest.ui.theme
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
@@ -38,7 +40,7 @@ fun TopBar(arrangement: Arrangement.Horizontal, modifier: Modifier, content: @Co
 @Composable
 fun BottomBar(alignment: Alignment.Horizontal, modifier: Modifier, content: @Composable RowScope.() -> Unit) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.height(144.dp).fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface
     ) {
         Row(
@@ -48,5 +50,10 @@ fun BottomBar(alignment: Alignment.Horizontal, modifier: Modifier, content: @Com
             horizontalArrangement = Arrangement.spacedBy(16.dp, alignment),
             verticalAlignment = Alignment.CenterVertically,
             content = content)
+
+        // Don't allow back, really this should be supported but for now,
+        // it's too easy to back click and go back to the main activity
+        BackHandler(enabled = true) {
+        }
     }
 }

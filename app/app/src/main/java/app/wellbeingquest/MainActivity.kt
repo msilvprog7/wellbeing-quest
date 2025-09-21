@@ -3,6 +3,7 @@ package app.wellbeingquest
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
@@ -34,6 +35,11 @@ class MainActivity : ComponentActivity() {
                         text = "wellbeing quest",
                         modifier = Modifier.padding(innerPadding)
                     )
+
+                    // Don't allow back, really this should be supported but for now,
+                    // it's too easy to back click and go back to the main activity
+                    BackHandler(enabled = true) {
+                    }
                 }
             }
         }

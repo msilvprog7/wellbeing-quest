@@ -9,6 +9,9 @@ import (
 	"api.wellbeingquest.app/internal/models"
 )
 
+// The user is provided for the inmemory version, but it is not currently used
+var user = dtos.User{Provider: "Test", Id: "1234567"}
+
 func TestAddActivityWhenNoEntries(t *testing.T) {
 	// Arrange
 	dataHandler := handlers.NewInMemoryDataHandler()
@@ -19,7 +22,7 @@ func TestAddActivityWhenNoEntries(t *testing.T) {
 	}
 
 	// Act
-	entry, _ := dataHandler.AddActivity(&activity)
+	entry, _ := dataHandler.AddActivity(&activity, &user)
 
 	// Assert
 	assertEntry(t, &entry, &activity, 1)
@@ -76,7 +79,7 @@ func TestAddActivityWhenExistingActivity(t *testing.T) {
 	}
 
 	// Act
-	entry, _ := dataHandler.AddActivity(&activity)
+	entry, _ := dataHandler.AddActivity(&activity, &user)
 
 	// Assert
 	assertEntry(t, &entry, &activity, 2)
@@ -132,7 +135,7 @@ func TestAddActivityWhenExistingFeeling(t *testing.T) {
 	}
 
 	// Act
-	entry, _ := dataHandler.AddActivity(&activity)
+	entry, _ := dataHandler.AddActivity(&activity, &user)
 
 	// Assert
 	assertEntry(t, &entry, &activity, 2)
@@ -188,7 +191,7 @@ func TestAddActivityWhenExistingWeek(t *testing.T) {
 	}
 
 	// Act
-	entry, _ := dataHandler.AddActivity(&activity)
+	entry, _ := dataHandler.AddActivity(&activity, &user)
 
 	// Assert
 	assertEntry(t, &entry, &activity, 2)
@@ -207,7 +210,7 @@ func TestGetWeekAndActivitiesWhenNoWeek(t *testing.T) {
 	}
 
 	// Act
-	_, _, err := dataHandler.GetWeekAndActivities(&weekRequested)
+	_, _, err := dataHandler.GetWeekAndActivities(&weekRequested, &user)
 
 	// Assert
 	if err.Error() != "week does not exist" {
@@ -233,7 +236,7 @@ func TestGetWeekAndActivitiesWhenNoEntries(t *testing.T) {
 	}
 
 	// Act
-	_, _, err := dataHandler.GetWeekAndActivities(&weekRequested)
+	_, _, err := dataHandler.GetWeekAndActivities(&weekRequested, &user)
 
 	// Assert
 	if err.Error() != "entries are empty" {
@@ -285,7 +288,7 @@ func TestGetWeekAndActivitiesWhenEntries(t *testing.T) {
 	})
 
 	// Act
-	week, actualEntries, err := dataHandler.GetWeekAndActivities(&weekRequested)
+	week, actualEntries, err := dataHandler.GetWeekAndActivities(&weekRequested, &user)
 
 	// Assert
 	if err != nil {
@@ -319,7 +322,7 @@ func TestGetActivitiesAndFeelingsWhenNoActivities(t *testing.T) {
 	}
 
 	// Act
-	_, _, err := dataHandler.GetActivitiesAndFeelings()
+	_, _, err := dataHandler.GetActivitiesAndFeelings(&user)
 
 	// Assert
 	if err.Error() != "activities are empty" {
@@ -345,7 +348,7 @@ func TestGetActivitiesAndFeelingsWhenNoFeelings(t *testing.T) {
   dataHandler.FeelingsByName = map[string]models.Feeling{}
 
 	// Act
-	_, _, err := dataHandler.GetActivitiesAndFeelings()
+	_, _, err := dataHandler.GetActivitiesAndFeelings(&user)
 
 	// Assert
 	if err.Error() != "feelings are empty" {
@@ -387,7 +390,7 @@ func TestGetActivitiesAndFeelingsWheActivitiesAndFeelings(t *testing.T) {
 	}
 
 	// Act
-	activities, feelings, err := dataHandler.GetActivitiesAndFeelings()
+	activities, feelings, err := dataHandler.GetActivitiesAndFeelings(&user)
 
 	// Assert
 	if err != nil {

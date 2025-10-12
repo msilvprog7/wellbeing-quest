@@ -4,6 +4,8 @@ import "time"
 
 type Entry struct {
 	Id int
+	UserProvider string
+	UserId string
 	Activity string
 	Feelings []string
 	Week string

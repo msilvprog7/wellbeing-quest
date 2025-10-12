@@ -24,7 +24,7 @@ func NewInMemoryDataHandler() *InMemoryDataHandler {
 	}
 }
 
-func (handler *InMemoryDataHandler) AddActivity(activityRequested *dtos.Activity) (models.Entry, error) {
+func (handler *InMemoryDataHandler) AddActivity(activityRequested *dtos.Activity, userRequested *dtos.User) (models.Entry, error) {
 	// Create or get activity, feelings, and week
 	activity := createOrGetByName(handler.ActivitiesByName, activityRequested.Name, func(name string) models.Activity {
 		return models.Activity {
@@ -86,7 +86,7 @@ func (handler *InMemoryDataHandler) AddActivity(activityRequested *dtos.Activity
 	return entry, nil
 }
 
-func (handler *InMemoryDataHandler) GetWeekAndActivities(weekRequested *dtos.Week) (models.Week, []models.Entry, error) {
+func (handler *InMemoryDataHandler) GetWeekAndActivities(weekRequested *dtos.Week, userRequested *dtos.User) (models.Week, []models.Entry, error) {
 	// get week
 	if _, exists := handler.WeeksByName[weekRequested.Name]; !exists {
 		return models.Week{}, []models.Entry{}, errors.New("week does not exist")
@@ -106,7 +106,7 @@ func (handler *InMemoryDataHandler) GetWeekAndActivities(weekRequested *dtos.Wee
 	return week, entriesByWeek, nil
 }
 
-func (handler *InMemoryDataHandler) GetActivitiesAndFeelings() ([]models.Activity, []models.Feeling, error) {
+func (handler *InMemoryDataHandler) GetActivitiesAndFeelings(userRequested *dtos.User) ([]models.Activity, []models.Feeling, error) {
 	// get activities
 	activities := Values(handler.ActivitiesByName)
 	if len(activities) == 0 {

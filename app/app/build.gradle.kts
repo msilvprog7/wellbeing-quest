@@ -1,3 +1,18 @@
+import java.util.Properties
+
+// Setup local.properties
+val localProperties = Properties()
+val localFile = rootProject.file("local.properties")
+if (!localFile.exists()) {
+    throw GradleException("Missing local.properties file at project root.")
+}
+
+localFile.inputStream().use { localProperties.load(it) }
+val googleClientId = localProperties.getProperty("GOOGLE_CLIENT_ID")
+    ?: throw GradleException("Missing GOOGLE_CLIENT_ID in local.properties.")
+val serviceUrl = localProperties.getProperty("SERVICE_URL")
+    ?: throw GradleException("Missing SERVICE_URL in local.properties.")
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,14 +24,21 @@ android {
     namespace = "app.wellbeingquest"
     compileSdk = 36
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "app.wellbeingquest"
-        minSdk = 26
+        minSdk = 36
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "GOOGLE_CLIENT_ID", "\"$googleClientId\"")
+        buildConfigField("String", "SERVICE_URL", "\"$serviceUrl\"")
     }
 
     buildTypes {
@@ -66,6 +88,10 @@ dependencies {
     implementation(libs.retrofit2.converter.gson)
     implementation(libs.okhttp3)
     implementation(libs.okhttp3.logging.interceptor)
+    implementation(libs.googleid)
+    implementation("androidx.credentials:credentials:1.6.0-beta01")
+    implementation("androidx.credentials:credentials-play-services-auth:1.6.0-beta01")
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -56,8 +56,12 @@ func GetDataHandler() handlers.DataHandler {
 
 func SetupRouter(dataHandler handlers.DataHandler) *gin.Engine {
 	router := gin.Default()
-	router.POST("/activities/v1", handlers.PostActivity(dataHandler))
-	router.GET("/activities/v1/weeks/:week", handlers.GetActivitiesByWeek(dataHandler))
-	router.GET("/activities/v1/suggestions", handlers.GetActivitySuggestions(dataHandler))
+	router.POST("/auth/google", handlers.AuthenticateGoogle())
+
+	protected := router.Group("/activities/v1")
+	protected.Use(handlers.AuthMiddleware())
+	protected.POST("", handlers.PostActivity(dataHandler))
+	protected.GET("/weeks/:week", handlers.GetActivitiesByWeek(dataHandler))
+	protected.GET("/suggestions", handlers.GetActivitySuggestions(dataHandler))
 	return router
 }

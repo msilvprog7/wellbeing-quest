@@ -1,6 +1,8 @@
 package app.wellbeingquest.data.service.api
 
 import app.wellbeingquest.data.service.dto.ActivityDto
+import app.wellbeingquest.data.service.dto.IdTokenRequest
+import app.wellbeingquest.data.service.dto.SessionTokenDto
 import app.wellbeingquest.data.service.dto.SuggestionsDto
 import app.wellbeingquest.data.service.dto.WeekDto
 import retrofit2.Response
@@ -10,6 +12,9 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface ApiService {
+    @POST("auth/google")
+    suspend fun authGoogle(@Body request: IdTokenRequest): Response<SessionTokenDto>
+
     @POST("activities/v1")
     suspend fun postActivity(@Body activity: ActivityDto): Response<ActivityDto>
 

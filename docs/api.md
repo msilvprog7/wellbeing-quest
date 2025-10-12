@@ -12,10 +12,16 @@ The API services use the following:
 - Docker
 - Postgres (localhost)
 
-Create file `.env`, specifying the password
-entered above:
+Create file `.env`, specifying your:
+
+- Auth secret key, try `go run tools/secret_key.go`
+- Google Web Application OAuth2.0 client id
+- Password for the database:
 
 ```text
+AUTH_ENABLED=True
+AUTH_SECRET_KEY=
+AUTH_GOOGLE_CLIENT_ID=...apps.googleusercontent.com
 DB_MODE=localhost
 DB_RESET=
 DB_DRIVER=postgres
@@ -60,12 +66,13 @@ go test ./tests/unittests
 Create `tests/e2etests/.env`:
 
 ```text
+AUTH_ENABLED=False
 DB_MODE=localhost
 DB_RESET=reset
 DB_DRIVER=postgres
 DB_USER=postgres
 DB_PASSWORD=
-DB_HOST=db
+DB_HOST=localhost
 DB_NAME=yourdb
 DB_SQLDIRECTORY=../../cmd/service
 ```

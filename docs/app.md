@@ -8,6 +8,13 @@ The app uses the following:
 
 - Android Studio
 
+In `/app` create or update `local.properties`:
+
+```text
+GOOGLE_CLIENT_ID=...apps.googleusercontent.com
+SERVICE_URL=http://10.0.2.2:8080/
+```
+
 ## Run
 
 Run the app using the Android Virtual Device

@@ -8,9 +8,9 @@ import (
 )
 
 type DataHandler interface {
-	AddActivity(activity *dtos.Activity) (models.Entry, error)
-	GetWeekAndActivities(week *dtos.Week) (models.Week, []models.Entry, error)
-  GetActivitiesAndFeelings() ([]models.Activity, []models.Feeling, error)
+	AddActivity(activity *dtos.Activity, user *dtos.User) (models.Entry, error)
+	GetWeekAndActivities(week *dtos.Week, user *dtos.User) (models.Week, []models.Entry, error)
+  GetActivitiesAndFeelings(user *dtos.User) ([]models.Activity, []models.Feeling, error)
 }
 
 // Helper functions related to representing data

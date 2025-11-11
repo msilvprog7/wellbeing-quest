@@ -9,6 +9,8 @@ import androidx.work.WorkManager
 import app.wellbeingquest.data.model.Feeling
 import app.wellbeingquest.data.service.api.DataRepository
 import app.wellbeingquest.data.service.api.scheduleUploadWorker
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,11 +19,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 
-class WeekViewModel(
-    private val context: Context,
+@HiltViewModel
+class WeekViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val dataRepository: DataRepository
 ): ViewModel() {
+
     private val _currentWeekActualStart = getStartOfWeek()
     private val _selectedWeekStart = MutableStateFlow(_currentWeekActualStart)
     private val _feelingsInWeek = MutableStateFlow(listOf<Feeling>())

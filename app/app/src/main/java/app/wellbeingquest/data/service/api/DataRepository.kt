@@ -16,9 +16,10 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import javax.inject.Inject
 
 // todo: implement week and suggestion data functions between api service and app database
-class DataRepository(
+class DataRepository @Inject constructor(
     private val appDatabase: AppDatabase,
     private val apiService: ApiService
 ) {

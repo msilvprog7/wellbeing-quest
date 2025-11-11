@@ -1,6 +1,5 @@
 package app.wellbeingquest.data.service.api
 
-import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import java.security.KeyStore
@@ -9,8 +8,12 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 import android.util.Base64
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class CryptoManager(context: Context) {
+@Singleton
+class CryptoManager @Inject constructor() {
+
     companion object {
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val KEY_ALIAS = "session_token_key"

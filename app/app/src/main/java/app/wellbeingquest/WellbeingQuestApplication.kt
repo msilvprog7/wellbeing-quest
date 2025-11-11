@@ -1,17 +1,25 @@
 package app.wellbeingquest
 
 import android.app.Application
-import app.wellbeingquest.data.service.api.ApiConfig
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
-class WellbeingQuestApplication : Application() {
+@HiltAndroidApp
+class WellbeingQuestApplication : Application(), Configuration.Provider {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
     companion object {
         lateinit var instance: WellbeingQuestApplication
             private set
     }
 
-    override fun onCreate() {
-        super.onCreate()
-        ApiConfig.init(this)
-        instance = this
-    }
+    override val workManagerConfiguration: Configuration
+            get() = Configuration.Builder()
+                .setWorkerFactory(workerFactory)
+                .setMinimumLoggingLevel(loggingLevel = android.util.Log.DEBUG)
+                .build()
 }

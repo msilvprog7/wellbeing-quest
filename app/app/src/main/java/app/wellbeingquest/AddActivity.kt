@@ -32,14 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import app.wellbeingquest.data.local.database.AppDatabase
-import app.wellbeingquest.data.local.database.DatabaseProvider
 import app.wellbeingquest.data.local.entity.EntryDraft
 import app.wellbeingquest.data.local.entity.EntryQueueItem
-import app.wellbeingquest.data.local.entity.SuggestionCacheItem
 import app.wellbeingquest.data.model.Suggestions
 import app.wellbeingquest.data.service.api.DataRepository
-import app.wellbeingquest.data.service.api.RetrofitInstance
-import app.wellbeingquest.data.service.api.scheduleUploadWorker
 import app.wellbeingquest.ui.theme.AutoCompleteTextField
 import app.wellbeingquest.ui.theme.BottomBar
 import app.wellbeingquest.ui.theme.FormButton
@@ -47,19 +43,24 @@ import app.wellbeingquest.ui.theme.GroupText
 import app.wellbeingquest.ui.theme.MultiEntryTextField
 import app.wellbeingquest.ui.theme.NavigationButton
 import app.wellbeingquest.ui.theme.TopBar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class AddActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var appDatabase: AppDatabase
+
+    @Inject
+    lateinit var dataRepository: DataRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
-            // todo: setup hilt to inject dependencies throughout app
-            val appDatabase = DatabaseProvider.getInstance(this@AddActivity)
-            val apiService = RetrofitInstance.api
-            val dataRepository = DataRepository(appDatabase, apiService)
-
             val draft = appDatabase.entryDraftDao().getDraft()
             val suggestions = dataRepository.getSuggestions()
 

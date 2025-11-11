@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,37 +40,30 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import app.wellbeingquest.data.local.database.DatabaseProvider
 import app.wellbeingquest.data.model.Activity
 import app.wellbeingquest.data.model.Feeling
-import app.wellbeingquest.data.service.api.DataRepository
-import app.wellbeingquest.data.service.api.RetrofitInstance
-import app.wellbeingquest.data.service.api.scheduleUploadWorker
 import app.wellbeingquest.ui.theme.BottomBar
 import app.wellbeingquest.ui.theme.GroupLabel
 import app.wellbeingquest.ui.theme.GroupText
 import app.wellbeingquest.ui.theme.NavigationButton
 import app.wellbeingquest.ui.theme.TopBar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+@AndroidEntryPoint
 class WeekActivity : ComponentActivity() {
+
+    private val weekViewModel: WeekViewModel by viewModels()
+
     var dayNameFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEE MMM d")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
             // week view model schedules upload of entries to api service to sync when uploaded
-            // todo: setup hilt to inject dependencies throughout app
-            val appDatabase = DatabaseProvider.getInstance(this@WeekActivity)
-            val apiService = RetrofitInstance.api
-            val dataRepository = DataRepository(appDatabase, apiService)
-            val viewModelFactory = WeekViewModelFactory(this@WeekActivity, dataRepository)
-            val weekViewModel: WeekViewModel = ViewModelProvider(this@WeekActivity, viewModelFactory)[WeekViewModel::class.java]
-
             setContent {
                 val selectedWeekStart = weekViewModel.selectedWeekStart.collectAsState()
                 val hasNextWeek = weekViewModel.hasNextWeek.collectAsState()

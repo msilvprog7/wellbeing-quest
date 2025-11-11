@@ -18,6 +18,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -92,7 +93,12 @@ dependencies {
     implementation("androidx.credentials:credentials:1.6.0-beta01")
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0-beta01")
     implementation("androidx.datastore:datastore-preferences:1.1.7")
+    implementation("com.google.dagger:hilt-android:2.57.1")
+    implementation(libs.androidx.hilt.common)
+    implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.room.compiler)
+    ksp("com.google.dagger:hilt-android-compiler:2.57.1")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

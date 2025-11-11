@@ -30,23 +30,34 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.lifecycleScope
-import app.wellbeingquest.data.service.api.ApiConfig
-import app.wellbeingquest.data.service.api.RetrofitInstance
+import app.wellbeingquest.data.service.api.ApiService
 import app.wellbeingquest.data.service.dto.IdTokenRequest
 import app.wellbeingquest.ui.theme.WellbeingQuestTheme
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private lateinit var credentialManager: CredentialManager
+
+    @Inject
+    @NoAuthApiService
+    lateinit var api: ApiService
+
+    @Inject
+    lateinit var sessionManager: SessionManager
+
+    @Inject
+    lateinit var credentialManager: CredentialManager
+
     private val TAG = "MainActivity"
     private val SERVER_CLIENT_ID = BuildConfig.GOOGLE_CLIENT_ID;
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        credentialManager = CredentialManager.create(this)
 
         enableEdgeToEdge()
 
@@ -122,7 +133,7 @@ class MainActivity : ComponentActivity() {
                 Log.d("SignIn", "ID Token: ${idTokenCredential.idToken}")
 
                 // validate in backend
-                val sessionTokenResponse = RetrofitInstance.api.authGoogle(
+                val sessionTokenResponse = api.authGoogle(
                     IdTokenRequest(
                         idTokenCredential.idToken!!
                     )
@@ -136,7 +147,7 @@ class MainActivity : ComponentActivity() {
                 Log.d("SignIn", "Session token: $sessionToken")
 
                 // store token
-                ApiConfig.sessionToken = sessionToken
+                sessionManager.saveSessionToken(sessionToken)
 
                 // send to next screen
                 var intent = Intent(this@MainActivity, WeekActivity::class.java)
